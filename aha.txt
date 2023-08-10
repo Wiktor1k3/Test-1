@@ -1,0 +1,103 @@
+Tłumaczenie w Symfony jest realizowane za pomocą komponentu "Translation" (Tłumaczenie). Pozwala on na tworzenie wielojęzycznych aplikacji poprzez zapewnienie interfejsów w różnych językach. Poniżej znajduje się podstawowy przewodnik dotyczący korzystania z komponentu Tłumaczenie w Symfony:
+
+Konfiguracja tłumaczeń:
+Upewnij się, że komponent Tłumaczenie jest poprawnie skonfigurowany. Otwórz plik config/packages/translation.yaml i ustaw parametry tłumaczenia, takie jak domyślny język i ścieżka do plików tłumaczeń.
+yaml
+Copy code
+framework:
+    translation:
+        default_locale: en
+        paths:
+            - '%kernel.project_dir%/translations'
+Pliki tłumaczeń:
+W katalogu translations twojego projektu możesz utworzyć pliki tłumaczeń dla różnych języków. Na przykład, dla angielskiego możesz stworzyć plik messages.en.yaml, a dla polskiego plik messages.pl.yaml.
+
+Dodawanie treści do tłumaczenia:
+W plikach tłumaczeń definiuj pary klucz-wartość, gdzie kluczem jest oryginalny tekst, a wartością jest jego tłumaczenie. Na przykład:
+
+yaml
+Copy code
+# translations/messages.en.yaml
+hello_world: Hello, world!
+
+# translations/messages.pl.yaml
+hello_world: Witaj, świecie!
+Użycie tłumaczeń w kodzie:
+W kontrolerach, widokach lub dowolnych innych miejscach, gdzie chcesz wyświetlić przetłumaczony tekst, możesz skorzystać z serwisu tłumaczeń.
+php
+Copy code
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Translation\TranslatorInterface;
+
+class MyController
+{
+    public function index(TranslatorInterface $translator)
+    {
+        $translatedText = $translator->trans('hello_world');
+        
+        return new Response($translatedText);
+    }
+}
+Widok HTML (Twig):
+
+twig
+Copy code
+{# app/templates/my_template.html.twig #}
+{{ 'hello_world'|trans }}
+Zmiana języka:
+Aby dynamicznie zmieniać język, można ustawić preferowany język w sesji, ciasteczku lub poprzez parametr w URL. Następnie symfony będzie wybierać tłumaczenia dla wybranego języka.
+To tylko podstawy korzystania z komponentu Tłumaczenie w Symfony. Komponent ten oferuje wiele bardziej zaawansowanych opcji, takich jak obsługa wielu źródeł tłumaczeń, formatowanie tłumaczeń zmiennych, obsługa tłumaczeń w formularzach i wiele innych. Dokumentacja Symfony jest doskonałym źródłem wiedzy, jeśli chcesz dowiedzieć się więcej: Dokumentacja Tłumaczenia w Symfony.
+
+
+
+
+User
+a muszę używać to w kontrolerze? nie mogę od razu w widoku?
+ChatGPT
+Oczywiście, możesz również korzystać z tłumaczeń bezpośrednio w widokach (np. w plikach Twig) bez konieczności używania kontrolerów. W Symfony komponent Tłumaczenie jest dostępny we wszystkich warstwach aplikacji, więc możesz go wykorzystywać tam, gdzie jest to potrzebne.
+
+W plikach widoków Twig możesz używać filtra trans lub funkcji trans do tłumaczenia tekstu. Oto przykłady:
+
+twig
+Copy code
+{# Przykład użycia filtra 'trans' #}
+{{ 'hello_world'|trans }}
+
+{# Przykład użycia funkcji 'trans' #}
+{{ trans('hello_world') }}
+Te przykłady wykonają tłumaczenie tekstu na podstawie plików tłumaczeń i wyświetlą odpowiednią wersję tekstu zależnie od wybranego języka.
+
+Używanie tłumaczeń bezpośrednio w widokach jest często bardziej praktyczne, szczególnie jeśli potrzebujesz przetłumaczyć statyczny tekst bez konieczności przekazywania go przez kontroler. Jednak jeśli masz bardziej skomplikowane operacje związane z tłumaczeniami, na przykład tłumaczenie dynamicznych treści w zależności od pewnych zmiennych, wtedy kontroler może być bardziej odpowiednim miejscem do przetłumaczenia tekstu.
+
+W skrócie, możesz korzystać z tłumaczeń zarówno w kontrolerach, jak i bezpośrednio w widokach, w zależności od kontekstu i potrzeb twojej aplikacji.
+
+
+
+
+User
+a jak potem sprawdzic czy tlumaczenie dziala na localhost?
+ChatGPT
+Aby sprawdzić, czy tłumaczenia działają poprawnie na lokalnym środowisku (localhost) w Symfony, możesz wykonać kilka kroków:
+
+Upewnij się, że tłumaczenia są poprawnie skonfigurowane: Sprawdź, czy w pliku config/packages/translation.yaml parametry tłumaczeń są ustawione prawidłowo, w tym domyślny język i ścieżka do plików tłumaczeń.
+
+Stwórz pliki tłumaczeń: Upewnij się, że utworzyłeś pliki tłumaczeń w katalogu translations twojego projektu. Na przykład, dla angielskiego może to być plik messages.en.yaml, a dla polskiego plik messages.pl.yaml.
+
+Uruchom serwer lokalny: Uruchom serwer lokalny Symfony na swoim localhost. Możesz to zrobić, wpisując w konsoli:
+
+sql
+Copy code
+symfony server:start
+Pamiętaj, że musisz mieć zainstalowane narzędzie Symfony CLI oraz PHP w swoim środowisku.
+
+Otwórz aplikację w przeglądarce: Otwórz przeglądarkę i przejdź do adresu http://localhost:8000 (lub innego portu, jeśli został użyty inny). Sprawdź, czy strona działa poprawnie.
+
+Sprawdź tłumaczenia w akcji: Upewnij się, że teksty wyświetlane na stronie są przetłumaczone zgodnie z wybranym językiem. Jeśli korzystasz z tłumaczeń w widokach Twig, na przykład:
+
+twig
+Copy code
+{{ 'hello_world'|trans }}
+Powinno być widoczne tłumaczenie tekstu w zależności od ustawionego języka.
+
+Zmień język: Jeśli chcesz sprawdzić, czy tłumaczenia zmieniają się w zależności od wybranego języka, możesz zmienić język na stronie (jeśli masz taką funkcjonalność zaimplementowaną) lub zmienić język ręcznie w adresie URL (np. http://localhost:8000/pl dla polskiego).
+Jeśli wszystkie te kroki wykonasz poprawnie, będziesz mógł zweryfikować, czy tłumaczenia działają poprawnie na swoim localhost w Symfony.
