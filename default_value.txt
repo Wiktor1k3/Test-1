@@ -1,0 +1,80 @@
+W Symfony Forms, możesz ustawić wartość domyślną dla pola formularza poprzez przekazanie opcji "data" podczas tworzenia formularza. Jeśli chcesz użyć wartości pobranej z innej encji, musisz to zrobić w kontekście tworzenia formularza.
+
+Załóżmy, że masz dwie encje: "User" i "Settings", gdzie "Settings" przechowuje pewne ustawienia użytkownika, a ty chcesz użyć wartości z "Settings" jako wartości domyślnej w formularzu tworzenia użytkownika. Poniżej znajduje się przykład, jak to osiągnąć:
+
+Tworzenie formularza:
+php
+----------------------------------------------------------------------------------------
+use App\Entity\User;
+use App\Entity\Settings;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+
+class UserType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $builder
+            ->add('username', TextType::class)
+            // Dodaj pole dla ustawień z pobraniem encji Settings
+            ->add('settings', EntityType::class, [
+                'class' => Settings::class,
+                'choice_label' => 'settingName', // zastąp to odpowiednią nazwą pola z Settings
+                'data' => $options['default_settings'], // wartość domyślna
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults([
+            'data_class' => User::class,
+            'default_settings' => null, // dodajemy opcję dla wartości domyślnej
+        ]);
+    }
+}
+----------------------------------------------------------------------------------------
+
+Tworzenie kontrolera:
+
+php
+----------------------------------------------------------------------------------------
+use App\Entity\User;
+use App\Form\UserType;
+use App\Entity\Settings;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class UserController extends AbstractController
+{
+    /**
+     * @Route("/create-user", name="create_user")
+     */
+    public function createUser(Request $request): Response
+    {
+        $user = new User();
+
+        $settings = $this->getDoctrine()->getRepository(Settings::class)->findOneBy([]); // Pobranie ustawień (tutaj przyjmujemy, że pobierasz pierwszy rekord)
+        
+        $form = $this->createForm(UserType::class, $user, [
+            'default_settings' => $settings, // przekazanie ustawień do formularza
+        ]);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Logika zapisu użytkownika
+        }
+
+        return $this->render('user/create.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+}
+----------------------------------------------------------------------------------------
+
+Upewnij się, że odpowiednio dostosujesz nazwy pól, klas i szablonów do swojej aplikacji. W tym przykładzie założyłem, że masz szablon Twig o nazwie "create.html.twig" do wyrenderowania formularza.
