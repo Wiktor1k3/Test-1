@@ -1,0 +1,101 @@
+Aby wysłać informacje o zamówieniach na maila w aplikacji opartej na Symfony, możesz skorzystać z biblioteki Swift Mailer, która jest często używana do obsługi funkcji mailowych w Symfony. Poniżej znajduje się ogólny przewodnik, jak to zrobić:
+
+Krok 1: Instalacja i Konfiguracja Swift Mailer
+
+Zainstaluj Swift Mailer używając Composer'a:
+
+bash
+Copy code
+composer require symfony/swiftmailer-bundle
+Skonfiguruj Swift Mailer w pliku config/packages/swiftmailer.yaml:
+
+yaml
+------------------------------------------------------------------------------------------------------------------------
+swiftmailer:
+    transport: smtp
+    host: your_smtp_host
+    port: your_smtp_port
+    username: your_smtp_username
+    password: your_smtp_password
+
+------------------------------------------------------------------------------------------------------------------------
+
+Podmień your_smtp_host, your_smtp_port, your_smtp_username i your_smtp_password odpowiednimi danymi dostępowymi do Twojego serwera SMTP.
+
+Krok 2: Tworzenie Kontrolera i Widoku
+
+Stwórz nowy kontroler, np. OrderController:
+
+bash
+Copy code
+bin/console make:controller OrderController
+W kontrolerze utwórz akcję, która będzie wysyłać e-mail z danymi zamówień:
+
+php
+------------------------------------------------------------------------------------------------------------------------
+// src/Controller/OrderController.php
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
+class OrderController extends AbstractController
+{
+    /**
+     * @Route("/send-order-email", name="send_order_email")
+     */
+    public function sendOrderEmail(MailerInterface $mailer): Response
+    {
+        $orders = ...; // Pobierz dane zamówień
+
+        $email = (new Email())
+            ->from('your_email@example.com')
+            ->to('customer@example.com')
+            ->subject('Zamówienia')
+            ->html($this->renderView('order/email.html.twig', [
+                'orders' => $orders,
+            ]));
+
+        $mailer->send($email);
+
+        return $this->redirectToRoute('some_success_route');
+    }
+}
+------------------------------------------------------------------------------------------------------------------------
+
+Stwórz widok e-maila w pliku templates/order/email.html.twig:
+
+twig
+------------------------------------------------------------------------------------------------------------------------
+{# templates/order/email.html.twig #}
+<html>
+<body>
+    <h1>Zamówienia:</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <!-- Dodaj pozostałe kolumny -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <!-- Dodaj pozostałe kolumny -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+------------------------------------------------------------------------------------------------------------------------
+
+Krok 3: Wywołanie Akcji
+
+Aby wywołać akcję wysyłania e-maila, możesz dodać link lub formularz w swoim widoku, który wywoła tę akcję.
+
+Pamiętaj, że powyższy kod to tylko ogólny przewodnik. Musisz dostosować go do swoich potrzeb, w szczególności podając właściwe dane zamówień oraz konfigurując treść e-maila i dane serwera SMTP w sposób odpowiedni do Twoich ustawień.
+
+Upewnij się, że Twoja aplikacja ma również ustawiony serwer SMTP oraz odpowiednie zabezpieczenia, takie jak SSL lub TLS, w zależności od konfiguracji serwera pocztowego.
